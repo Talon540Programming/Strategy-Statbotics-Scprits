@@ -11,12 +11,13 @@ L3 = 'coral_l3'
 L4 = 'coral_l4'
 points = 'total_points'
 year = 2025
-# change to search 
-event_code = "vabla"
+
+# change to search
+event_code = "hop"
 
 # pulls value bassed on constant passed 
 def extract_values(team_data, type):
-    """Extract coral_l4 EPA value from team_data"""
+    """Extract values from team_data"""
     try:
         return team_data['epa']['breakdown'][type]
     except (TypeError, KeyError):
@@ -29,23 +30,36 @@ def extract_team_name(name_data):
         return name_data.get('team_name', 'Unknown')
     return str(name_data)
 
-def export_to_sheets(data_list, sheet_name='Test Sheet Python'):
-    """Export data to Google Sheets"""
+def export_to_sheets(data_list, sheet_name, worksheet_name):
+    """Export data to a Google Sheet; update if it exists or create if not."""
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     # TODO create and add your own API Key go to https://console.cloud.google.com/iam-admin/serviceaccounts
     # Manage Keys and make a new json key
     creds = ServiceAccountCredentials.from_json_keyfile_name('your json file', scope)
     client = gspread.authorize(creds)
 
-    # Create a new spreadsheet
-    sheet = client.create(sheet_name)
-    worksheet = sheet.get_worksheet(0)
+    # Try to open existing sheet; if not, create it
+    try:
+        sheet = client.open(sheet_name)
+    except gspread.SpreadsheetNotFound:
+        print(f"Spreadsheet '{sheet_name}' not found. Creating new one.")
+        sheet = client.create(sheet_name)
 
-    # Create headers
+    # Try to open worksheet; if not, create it
+    try:
+        worksheet = sheet.worksheet(worksheet_name)
+    except gspread.WorksheetNotFound:
+        print(f"Worksheet '{worksheet_name}' not found. Creating new one.")
+        worksheet = sheet.add_worksheet(title=worksheet_name, rows="100", cols="10")
+
+    # Clear existing content
+    worksheet.clear()
+
+    # Headers
     headers = ['Team', 'Year', 'Name', 'EPA', 'Coral L4', 'Coral L3', 'Coral L2', 'Coral L1']
     worksheet.append_row(headers)
 
-    # Add data rows
+    # Append rows
     for data in data_list:
         row = [
             data['team'],
@@ -59,11 +73,12 @@ def export_to_sheets(data_list, sheet_name='Test Sheet Python'):
         ]
         worksheet.append_row(row)
 
-    # Make spreadsheet public
+    # Make sheet public (optional)
     sheet.share(None, perm_type='anyone', role='writer')
 
-    print(f"Spreadsheet created: {sheet.url}")
+    print(f"Spreadsheet updated: {sheet.url}")
     return sheet.url
+
 
 def main(year, event_key):
     # Get all team-event data for the given event
@@ -109,7 +124,7 @@ def main(year, event_key):
         df = pd.DataFrame(results)
         print("\nResults as DataFrame:")
         print(df)
-        export_to_sheets(results, sheet_name="Statbotics Data")
+        export_to_sheets(results, "Test_Import", "Sheet1")
     
 
 if __name__ == "__main__":
