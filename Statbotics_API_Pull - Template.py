@@ -10,10 +10,10 @@ L2 = 'coral_l2'
 L3 = 'coral_l3'
 L4 = 'coral_l4'
 points = 'total_points'
+year = 2025
 
 # change to search 
-year = 2025
-event_code = "chcmp"
+event_code = "vabla"
 
 # pulls value bassed on constant passed 
 def extract_values(team_data, type):
@@ -35,7 +35,7 @@ def export_to_sheets(data_list, sheet_name='Test Sheet Python'):
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     # TODO create and add your own API Key go to https://console.cloud.google.com/iam-admin/serviceaccounts
     # Manage Keys and make a new json key
-    creds = ServiceAccountCredentials.from_json_keyfile_name('Input json file name here', scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name('your json file', scope)
     client = gspread.authorize(creds)
 
     # Create a new spreadsheet
