@@ -11,7 +11,6 @@ L3 = 'coral_l3'
 L4 = 'coral_l4'
 points = 'total_points'
 year = 2025
-
 # change to search 
 event_code = "vabla"
 
