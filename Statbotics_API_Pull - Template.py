@@ -33,9 +33,7 @@ def extract_team_name(name_data):
 def export_to_sheets(data_list, sheet_name, worksheet_name):
     """Export data to a Google Sheet; update if it exists or create if not."""
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    # TODO create and add your own API Key go to https://console.cloud.google.com/iam-admin/serviceaccounts
-    # Manage Keys and make a new json key
-    creds = ServiceAccountCredentials.from_json_keyfile_name('your json file', scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name('json file here', scope)
     client = gspread.authorize(creds)
 
     # Try to open existing sheet; if not, create it
@@ -59,6 +57,8 @@ def export_to_sheets(data_list, sheet_name, worksheet_name):
     headers = ['Team', 'Year', 'Name', 'EPA', 'Coral L4', 'Coral L3', 'Coral L2', 'Coral L1']
     worksheet.append_row(headers)
 
+    total_rows = []
+
     # Append rows
     for data in data_list:
         row = [
@@ -71,7 +71,9 @@ def export_to_sheets(data_list, sheet_name, worksheet_name):
             data['coral_l2'],
             data['coral_l1']
         ]
-        worksheet.append_row(row)
+        total_rows.append(row)
+
+    worksheet.append_rows(total_rows)
 
     # Make sheet public (optional)
     sheet.share(None, perm_type='anyone', role='writer')
