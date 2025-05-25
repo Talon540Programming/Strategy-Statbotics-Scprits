@@ -4,6 +4,7 @@ import statbotics
 from oauth2client.service_account import ServiceAccountCredentials
 
 sb = statbotics.Statbotics()
+
 # constants 
 L1 = 'coral_l1'
 L2 = 'coral_l2'
@@ -12,8 +13,13 @@ L4 = 'coral_l4'
 points = 'total_points'
 year = 2025
 
-# change to search
+# change to search for events
 event_code = "hop"
+
+# first run will make a new sheet
+# if you keep the same name you can update any workseet inside the sheet 
+sheet_name = "Test_import"
+worksheet_name = "Sheet1"
 
 # pulls value bassed on constant passed 
 def extract_values(team_data, type):
@@ -53,11 +59,12 @@ def export_to_sheets(data_list, sheet_name, worksheet_name):
     # Clear existing content
     worksheet.clear()
 
+    # stores rows as 2d array 
+    total_rows = []
+
     # Headers
     headers = ['Team', 'Year', 'Name', 'EPA', 'Coral L4', 'Coral L3', 'Coral L2', 'Coral L1']
-    worksheet.append_row(headers)
-
-    total_rows = []
+    total_rows.append(headers)
 
     # Append rows
     for data in data_list:
@@ -81,7 +88,6 @@ def export_to_sheets(data_list, sheet_name, worksheet_name):
     print(f"Spreadsheet updated: {sheet.url}")
     return sheet.url
 
-
 def main(year, event_key):
     # Get all team-event data for the given event
     team_events = sb.get_team_events(event=event_key, limit=100)
@@ -90,6 +96,7 @@ def main(year, event_key):
     name_list = ["team_name"]
 
     results = []
+
     for team in teams:
         try:
             # trys to get epa and name from each team will throw if null
@@ -107,7 +114,7 @@ def main(year, event_key):
         epa_value = extract_values(epa, points)
         team_name = extract_team_name(name)
 
-        if coral_l4 is not None and epa_value is not None:
+        if team_name is not None:
             print(f"Team {team} ({team_name}): EPA = {epa_value:.2f}, L4 = {coral_l4:.2f}, L3 = {coral_l3:.2f}, L2 = {coral_l2:.2f}, L1 = {coral_l1:.2f}")
 
             result = {
@@ -126,7 +133,7 @@ def main(year, event_key):
         df = pd.DataFrame(results)
         print("\nResults as DataFrame:")
         print(df)
-        export_to_sheets(results, "Test_Import", "Sheet1")
+        export_to_sheets(results, sheet_name, worksheet_name)
     
 
 if __name__ == "__main__":
